@@ -105,7 +105,14 @@ func main() {
 			return
 		}
 		for _, inv := range inventory {
-			fmt.Printf("ид %d,%d,%d", user_id, inv.item_id, inv.count)
+			item, err := getIdItem(db, inv.item_id)
+			fmt.Println(inv.item_id)
+			fmt.Println(item.Name)
+			if err != nil {
+				fmt.Println("ошибка при получении предмета по ид", err)
+				return
+			}
+			fmt.Printf("ид %d,%s,%d", user_id, item.Name, inv.count)
 		}
 
 	}
@@ -332,12 +339,8 @@ func getTypeId(db *sql.DB) (Type_id, error) {
 	return typey, nil
 }
 
-func getIdItem(db *sql.DB) (Item, error) {
+func getIdItem(db *sql.DB, id int) (Item, error) {
 	query := `SELECT * FROM items where id=?`
-
-	fmt.Println("по какому айди найти предмет")
-	var id int
-	fmt.Scan(&id)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
@@ -349,7 +352,10 @@ func getIdItem(db *sql.DB) (Item, error) {
 	for rows.Next() {
 
 		err := rows.Scan(
+			&typey.Id,
 			&typey.Name,
+			&typey.Type_id,
+			&typey.Price,
 		)
 		if err != nil {
 			return typey, err
