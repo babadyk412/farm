@@ -104,15 +104,19 @@ func main() {
 			fmt.Println("ошибка при получении инвентарей", err)
 			return
 		}
+		user, err := getUser(db, user_id)
+		if err != nil {
+			fmt.Println("ошибка при получении 1пользователя", err)
+			return
+		}
 		for _, inv := range inventory {
 			item, err := getIdItem(db, inv.item_id)
-			fmt.Println(inv.item_id)
-			fmt.Println(item.Name)
 			if err != nil {
 				fmt.Println("ошибка при получении предмета по ид", err)
 				return
 			}
-			fmt.Printf("ид %d,%s,%d", user_id, item.Name, inv.count)
+
+			fmt.Printf("имя: %s, предмет: %s, количество: %d\n", user.Login, item.Name, inv.count)
 		}
 
 	}
@@ -516,4 +520,34 @@ func getId_Type_Inventory(db *sql.DB) (Inventory, error) {
 		return Inventory{}, err
 	}
 	return idf, nil
+}
+
+func getUser(db *sql.DB, id int) (User, error) {
+	query := `SELECT * FROM users where id=?`
+
+	rows, err := db.Query(query, id)
+	if err != nil {
+		fmt.Println("fff", err)
+		return User{}, err
+	}
+	var typey User
+
+	for rows.Next() {
+
+		err := rows.Scan(
+			&typey.Id,
+			&typey.Login,
+			&typey.Password,
+			&typey.Money,
+		)
+		if err != nil {
+			return User{}, err
+		}
+
+	}
+
+	if err := rows.Err(); err != nil {
+		return User{}, err
+	}
+	return typey, nil
 }
