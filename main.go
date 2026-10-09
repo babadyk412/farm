@@ -104,8 +104,19 @@ func main() {
 			fmt.Println("ошибка при получении инвентарей", err)
 			return
 		}
+		user, err := getUser(db, user_id)
+		if err != nil {
+			fmt.Println("ошибка при получении 1пользователя", err)
+			return
+		}
 		for _, inv := range inventory {
-			fmt.Printf("ид %d,%d,%d", user_id, inv.item_id, inv.count)
+			item, err := getIdItem(db, inv.item_id)
+			if err != nil {
+				fmt.Println("ошибка при получении предмета по ид", err)
+				return
+			}
+
+			fmt.Printf("имя: %s, предмет: %s, количество: %d\n", user.Login, item.Name, inv.count)
 		}
 
 	}
@@ -332,12 +343,8 @@ func getTypeId(db *sql.DB) (Type_id, error) {
 	return typey, nil
 }
 
-func getIdItem(db *sql.DB) (Item, error) {
+func getIdItem(db *sql.DB, id int) (Item, error) {
 	query := `SELECT * FROM items where id=?`
-
-	fmt.Println("по какому айди найти предмет")
-	var id int
-	fmt.Scan(&id)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
@@ -349,7 +356,10 @@ func getIdItem(db *sql.DB) (Item, error) {
 	for rows.Next() {
 
 		err := rows.Scan(
+			&typey.Id,
 			&typey.Name,
+			&typey.Type_id,
+			&typey.Price,
 		)
 		if err != nil {
 			return typey, err
@@ -510,4 +520,34 @@ func getId_Type_Inventory(db *sql.DB) (Inventory, error) {
 		return Inventory{}, err
 	}
 	return idf, nil
+}
+
+func getUser(db *sql.DB, id int) (User, error) {
+	query := `SELECT * FROM users where id=?`
+
+	rows, err := db.Query(query, id)
+	if err != nil {
+		fmt.Println("fff", err)
+		return User{}, err
+	}
+	var typey User
+
+	for rows.Next() {
+
+		err := rows.Scan(
+			&typey.Id,
+			&typey.Login,
+			&typey.Password,
+			&typey.Money,
+		)
+		if err != nil {
+			return User{}, err
+		}
+
+	}
+
+	if err := rows.Err(); err != nil {
+		return User{}, err
+	}
+	return typey, nil
 }
