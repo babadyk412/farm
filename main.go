@@ -53,10 +53,26 @@ func main() {
 	fmt.Scan(&vibor)
 
 	if vibor == 1 {
-		registration(db)
+		fmt.Println("введи логин")
+		var login string
+		fmt.Scan(&login)
+
+		fmt.Println("введи пароль")
+		var pasword string
+		fmt.Scan(&pasword)
+
+		registration(db, login, pasword)
 	}
 	if vibor == 2 {
-		user, err := enter(db)
+		fmt.Println("логин для входа")
+		var login string
+		fmt.Scan(&login)
+
+		fmt.Println("пароль для входа")
+		var pasword string
+		fmt.Scan(&pasword)
+
+		user, err := enter(db, login, pasword)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -74,7 +90,19 @@ func main() {
 		}
 	}
 	if vibor == 22 {
-		addItem(db)
+		fmt.Println("название")
+		var name string
+		fmt.Scan(&name)
+
+		fmt.Println("цена")
+		var price int
+		fmt.Scan(&price)
+
+		fmt.Println("Typeid предмета")
+		var typeId int
+		fmt.Scan(&typeId)
+
+		addItem(db, name, price, typeId)
 	}
 	if vibor == 222 {
 		items, err := getItems(db)
@@ -87,14 +115,28 @@ func main() {
 		}
 	}
 	if vibor == 4 {
-		addItemInventory(db)
+		fmt.Println("ид пользователя")
+		var idUser int
+		fmt.Scan(&idUser)
+
+		fmt.Println("ид предмета")
+		var idItem int
+		fmt.Scan(&idItem)
+
+		fmt.Println("кол во")
+		var count int
+		fmt.Scan(&count)
+
+		addItemInventory(db, idUser, idItem, count)
 	}
 	if vibor == 5 {
-		addItemType(db)
+		fmt.Println("название")
+		var name string
+		fmt.Scan(&name)
+
+		addItemType(db, name)
 	}
-	if vibor == 6 {
-		addItem(db)
-	}
+
 	if vibor == 7 {
 		fmt.Println("ид юзера")
 		var user_id int
@@ -123,29 +165,16 @@ func main() {
 
 }
 
-func registration(db *sql.DB) {
-	fmt.Println("введи логин")
-	var login string
-	fmt.Scan(&login)
-
-	fmt.Println("введи пароль")
-	var pasword string
-	fmt.Scan(&pasword)
-
-	user := User{
-		Login:    login,
-		Password: pasword,
-	}
+func registration(db *sql.DB, login string, password string) {
 
 	query := `INSERT INTO users (login, password,money) VALUES (?,?,?)`
 
-	fmt.Println("создан пользователь", user.Login)
-
-	_, err := db.Exec(query, login, pasword, 0)
+	_, err := db.Exec(query, login, password, 0)
 	if err != nil {
 		fmt.Println("ошибка при регистрации", err)
 		return
 	}
+	fmt.Println("создан пользователь", login)
 }
 
 func getUsers(db *sql.DB) ([]User, error) {
@@ -180,15 +209,7 @@ func getUsers(db *sql.DB) ([]User, error) {
 	return users, nil
 }
 
-func enter(db *sql.DB) (User, error) {
-	fmt.Println("логин для входа")
-	var login string
-	fmt.Scan(&login)
-
-	fmt.Println("пароль для входа")
-	var pasword string
-	fmt.Scan(&pasword)
-
+func enter(db *sql.DB, login string, pasword string) (User, error) {
 	user := User{}
 
 	q := `SELECT *FROM users WHERE login=? AND password=?`
@@ -200,34 +221,15 @@ func enter(db *sql.DB) (User, error) {
 	return user, nil
 }
 
-func addItem(db *sql.DB) {
-	fmt.Println("название")
-	var name string
-	fmt.Scan(&name)
-
-	fmt.Println("цена")
-	var price int
-	fmt.Scan(&price)
-
-	fmt.Println("Typeid предмета")
-	var typeId int
-	fmt.Scan(&typeId)
-
-	item := Item{
-		Name:    name,
-		Price:   price,
-		Type_id: typeId,
-	}
-
+func addItem(db *sql.DB, name string, price int, typeId int) {
 	query := `INSERT INTO items (name, price, type_id) VALUES (?,?,?)`
-
-	fmt.Println("создан предмет", item.Name)
 
 	_, err := db.Exec(query, name, price, typeId)
 	if err != nil {
 		fmt.Println("ошибка при создание предмета", err)
 		return
 	}
+	fmt.Println("создан предмет", name)
 }
 
 func getItems(db *sql.DB) ([]Item, error) {
@@ -262,18 +264,10 @@ func getItems(db *sql.DB) ([]Item, error) {
 	return items, nil
 }
 
-func addItemType(db *sql.DB) {
-	fmt.Println("название")
-	var name string
-	fmt.Scan(&name)
-
-	typey := Type_id{
-		Name: name,
-	}
-
+func addItemType(db *sql.DB, name string) {
 	query := `INSERT INTO items_type (name) VALUES (?)`
 
-	fmt.Println("создан тип", typey.Name)
+	fmt.Println("создан тип", name)
 
 	_, err := db.Exec(query, name)
 	if err != nil {
@@ -312,12 +306,8 @@ func getTypes(db *sql.DB) ([]Type_id, error) {
 }
 
 // ////////////////////////////
-func getTypeId(db *sql.DB) (Type_id, error) {
+func getTypeId(db *sql.DB, id int) (Type_id, error) {
 	query := `SELECT * FROM items where id=?`
-
-	fmt.Println("по какому айди найти")
-	var id int
-	fmt.Scan(&id)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
@@ -373,19 +363,7 @@ func getIdItem(db *sql.DB, id int) (Item, error) {
 	return typey, nil
 }
 
-func addItemInventory(db *sql.DB) error {
-	fmt.Println("ид пользователя")
-	var idUser int
-	fmt.Scan(&idUser)
-
-	fmt.Println("ид предмета")
-	var idItem int
-	fmt.Scan(&idItem)
-
-	fmt.Println("кол во")
-	var count int
-	fmt.Scan(&count)
-
+func addItemInventory(db *sql.DB, idUser int, idItem int, count int) error {
 	query := `INSERT INTO inventory (user_id, item_id, count) VALUES (?,?,?)`
 
 	_, err := db.Exec(query, idUser, idItem, count)
@@ -398,12 +376,8 @@ func addItemInventory(db *sql.DB) error {
 	return err
 }
 
-func getIdInventory(db *sql.DB) (Inventory, error) {
+func getIdInventory(db *sql.DB, id int) (Inventory, error) {
 	query := `SELECT * FROM inventory where id=?`
-
-	fmt.Println("по какому айди найти")
-	var id int
-	fmt.Scan(&id)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
@@ -460,43 +434,8 @@ func getAllInventory(db *sql.DB, user_id int) ([]InventoryDb_228, error) {
 	return inventoris, nil
 }
 
-func getId_User_Inventory(db *sql.DB) (Inventory, error) {
-	query := `SELECT * FROM inventory where user_id=?`
-
-	fmt.Println("по какому айди пользователя найти")
-	var id int
-	fmt.Scan(&id)
-
-	rows, err := db.Query(query, id)
-	if err != nil {
-		fmt.Println("fff", err)
-		return Inventory{}, err
-	}
-	var idf Inventory
-
-	for rows.Next() {
-
-		err := rows.Scan(
-			&idf.Items,
-		)
-		if err != nil {
-			return Inventory{}, err
-		}
-
-	}
-
-	if err := rows.Err(); err != nil {
-		return Inventory{}, err
-	}
-	return idf, nil
-}
-
-func getId_Type_Inventory(db *sql.DB) (Inventory, error) {
+func getId_Type_Inventory(db *sql.DB, id int) (Inventory, error) {
 	query := `SELECT * FROM inventory where type_id=?`
-
-	fmt.Println("по какому типу предмета найти")
-	var id string
-	fmt.Scan(&id)
 
 	rows, err := db.Query(query, id)
 	if err != nil {
